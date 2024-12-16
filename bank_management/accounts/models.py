@@ -1,17 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from .constants import ACCOUNT_TYPE, GENDER_TYPE
 
 # Create user using django builtin facilities
-ACCOUNT_TYPE = (
-    ('Savings', 'Savings'),
-    ('Current', 'Current'),
-)
-
-GENDER_TYPE = (
-    ('Male', 'Male'),
-    ('Female', 'Female'),
-)
-
 class UserBankAccount(models.Model):
     user = models.OneToOneField(User, related_name='account', on_delete=models.CASCADE) 
     '''
