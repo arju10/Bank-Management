@@ -1,60 +1,50 @@
-from django.shortcuts import render  # Import render to render templates (not used directly here but included for flexibility)
-from django.views.generic import FormView  # Import FormView, a class-based view for handling forms
-from .forms import UserRegistrationForm  # Import your custom form `UserRegistrationForm`
-from django.contrib.auth import login  # Import login function to log in a user automatically after registration
-from django.urls import reverse_lazy # Import reverse_lazy to lazily reverse URLs (used for success_url)
+from django.shortcuts import render
+from django.views.generic import FormView
+from .forms import UserRegistrationForm,UserUpdateForm
+from django.contrib.auth import login, logout
+from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView, LogoutView
+from django.views import View
+from django.shortcuts import redirect
 
-# Create your views here.
-
-# A class-based view for handling User Registration
 class UserRegistrationView(FormView):
-    # Define the template that will be rendered to show the registration form
-    template_name = 'accounts/user_registration.html'  
-    '''
-    template_name: It specifies the HTML file to use when displaying the form.
-    Example: 'registration/register.html'
-    '''
-
-    # Specify the form class that will be used in this view
+    template_name = 'accounts/user_registration.html'
     form_class = UserRegistrationForm
-    '''
-    form_class: This is the form that will be displayed in this view. 
-    We are using our custom form `UserRegistrationForm` created in `forms.py`.
-    '''
-
-    # Define the URL where the user will be redirected after successful registration
-    success_url = reverse_lazy('register')
-    '''
-    success_url: This is the URL to redirect the user after the form is successfully submitted.
-    Example: success_url = '/login/' redirects the user to the login page.
-    '''
-
-    # Handle the form submission if the form is valid
-    def form_valid(self, form):
-        '''
-        form_valid: This method is called when the submitted form passes all validations.
-        Here, we handle user creation and log the user in after saving.
-        '''
-
-        # Save the form and create the user
-        user = form.save()  
-        '''
-        form.save(): Calls the `save()` method of the form, which saves user data into the database.
-        Our custom `save()` method in `forms.py` also creates UserAddress and UserBankAccount objects.
-        '''
-
-        # Log in the newly registered user automatically
+    success_url = reverse_lazy('profile')
+    
+    def form_valid(self,form):
+        print(form.cleaned_data)
+        user = form.save()
         login(self.request, user)
-        '''
-        login(): This function logs the user in immediately after registration.
-        self.request: Pass the current HTTP request context so the user session can be updated.
-        user: The newly created user instance returned by form.save().
-        '''
-        # print(user)
-        # Call the parent class's form_valid method to redirect the user if everything is ok.
-        return super().form_valid(form)  
-        '''
-        super().form_valid(form): After logging in the user, this ensures the default behavior occurs,
-        like redirecting to the `success_url`.
-        '''
+        print(user)
+        return super().form_valid(form) # form_valid function call hobe jodi sob thik thake
+    
 
+class UserLoginView(LoginView):
+    template_name = 'accounts/user_login.html'
+    def get_success_url(self):
+        return reverse_lazy('home')
+
+class UserLogoutView(LogoutView):
+    def get_success_url(self):
+        if self.request.user.is_authenticated:
+            logout(self.request)
+        return reverse_lazy('home')
+
+
+class UserBankAccountUpdateView(View):
+    template_name = 'accounts/profile.html'
+
+    def get(self, request):
+        form = UserUpdateForm(instance=request.user)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to the user's profile page
+        return render(request, self.template_name, {'form': form})
+    
+    
+    
