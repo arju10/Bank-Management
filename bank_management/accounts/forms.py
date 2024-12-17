@@ -7,8 +7,8 @@ from .models import UserAddress, UserBankAccount  # Import our custom models: Us
 # Define a custom user registration form that inherits from UserCreationForm
 class UserRegistrationForm(UserCreationForm):
     birth_date = forms.DateField(widget=forms.DateInput(attrs={'type':'date'})) # Add a field for birth date with a calendar widget
-    gender = forms.TextField(max_length=10, choices=GENDER_TYPE) # Add a field for gender; choices are provided from GENDER_TYPE
-
+    gender = forms.ChoiceField(choices=GENDER_TYPE) # Add a field for gender; choices are provided from GENDER_TYPE
+    account_type = forms.ChoiceField(choices=ACCOUNT_TYPE) # Add a field for account_type; choices are provided from ACCOUNT_TYPE
     # Add fields for user address
     street_address = forms.CharField(max_length=100)
     city = forms.CharField(max_length=100)
@@ -70,3 +70,16 @@ class UserRegistrationForm(UserCreationForm):
 
         # Return the saved user object
         return our_user  
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields:
+            # print(field)
+            self.fields[field].widget.attrs.update({
+                'class':(
+                    'appearance-none block w-full bg-gray-200 '
+                    'text-gray-700 border border-gray-200 rounded '
+                    'py-3 px-4 leading-tight focus:outline-none '
+                    'focus:bg-white focus:border-gray-500'
+                )
+            })

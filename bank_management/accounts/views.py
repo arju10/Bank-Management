@@ -2,13 +2,14 @@ from django.shortcuts import render  # Import render to render templates (not us
 from django.views.generic import FormView  # Import FormView, a class-based view for handling forms
 from .forms import UserRegistrationForm  # Import your custom form `UserRegistrationForm`
 from django.contrib.auth import login  # Import login function to log in a user automatically after registration
+from django.urls import reverse_lazy # Import reverse_lazy to lazily reverse URLs (used for success_url)
 
 # Create your views here.
 
 # A class-based view for handling User Registration
-class UserRegistration(FormView):
+class UserRegistrationView(FormView):
     # Define the template that will be rendered to show the registration form
-    template_name = ''  
+    template_name = 'accounts/user_registration.html'  
     '''
     template_name: It specifies the HTML file to use when displaying the form.
     Example: 'registration/register.html'
@@ -22,7 +23,7 @@ class UserRegistration(FormView):
     '''
 
     # Define the URL where the user will be redirected after successful registration
-    success_url = ''
+    success_url = reverse_lazy('register')
     '''
     success_url: This is the URL to redirect the user after the form is successfully submitted.
     Example: success_url = '/login/' redirects the user to the login page.
@@ -43,13 +44,13 @@ class UserRegistration(FormView):
         '''
 
         # Log in the newly registered user automatically
-        login(user)
+        login(self.request, user)
         '''
         login(): This function logs the user in immediately after registration.
         self.request: Pass the current HTTP request context so the user session can be updated.
         user: The newly created user instance returned by form.save().
         '''
-
+        # print(user)
         # Call the parent class's form_valid method to redirect the user if everything is ok.
         return super().form_valid(form)  
         '''
